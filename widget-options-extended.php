@@ -305,4 +305,4 @@ class WidgetOptionsExtended
     }
 }
 
-WidgetOptionsExtended::get_instance()->init();
+add_action('plugins_loaded', array(WidgetOptionsExtended::get_instance(), 'init'), 11);
