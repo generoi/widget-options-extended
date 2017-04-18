@@ -198,6 +198,10 @@ class WidgetOptionsExtended
                 $extra_classes[] = "$visibility-for-large-only";
             }
         }
+        // @todo
+        if (!empty($options['alignment']['desktop'])) {
+            $extra_classes[] = 'text-' . $options['alignment']['desktop'];
+        }
 
         if (!empty($options['grid']['shrink'])) {
             $extra_classes[] = 'shrink';
