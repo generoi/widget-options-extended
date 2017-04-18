@@ -212,6 +212,7 @@ class WidgetOptionsExtended
         if (!empty($options['grid']['breakpoints'])) {
             foreach ($options['grid']['breakpoints'] as $breakpoint => $data) {
                 if (!empty($data['columns'])) {
+                    $extra_classes[] = 'column';
                     $extra_classes[] = $data['columns'];
                 }
                 if (!empty($data['offset'])) {
