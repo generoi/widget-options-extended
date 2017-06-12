@@ -157,13 +157,6 @@ class WidgetOptionsExtended
         if (!empty($options['class']['predefined'])) {
             $extra_classes = array_merge($extra_classes, $options['class']['predefined']);
         }
-        if (!empty($options['class']['id'])) {
-            $this->id = $options['class']['id'];
-        }
-        // Hide the title.
-        if (!empty($options['class']['title'])) {
-            $this->title = '';
-        }
         if (!empty($options['devices'])) {
             $visibility = $options['devices']['options'];
             $desktop = !empty($options['devices']['desktop']);
