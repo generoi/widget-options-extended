@@ -17,6 +17,9 @@ if (!defined('ABSPATH')) {
 
 class WidgetOptionsExtended
 {
+    const XY_GRID = 'xy-grid';
+    const FLEX_GRID = 'flex-grid';
+
     private static $breakpoints = [
         'small' => ['name' => 'Mobile', 'icon' => 'dashicons-smartphone'],
         'medium' => ['name' => 'Tablet', 'icon' => 'dashicons-tablet'],
@@ -25,7 +28,8 @@ class WidgetOptionsExtended
 
     private static $instance = null;
 
-    public static function get_instance() {
+    public static function get_instance()
+    {
         if (null === self::$instance) {
             self::$instance = new self();
         }
@@ -60,29 +64,38 @@ class WidgetOptionsExtended
 
     public function content_grid($args)
     {
-        $shrink = false;
+        $shrink = false; // flex-grid
         $alignment = false;
         $grid = [];
         if (isset($args['params']) && isset($args['params']['grid'])) {
-            if (isset($args['params']['grid']['shrink'])) {
-                $shrink = $args['params']['grid']['shrink'];
-            }
             if (isset($args['params']['grid']['alignment'])) {
                 $alignment = $args['params']['grid']['alignment'];
             }
+            // flex-grid
+            if (isset($args['params']['grid']['shrink'])) {
+                $shrink = $args['params']['grid']['shrink'];
+            }
         }
         foreach (self::$breakpoints as $breakpoint => $info) {
-            $grid[$breakpoint] = ['columns' => '', 'expand' => '', 'offset' => '', 'order' => ''];
+            $grid[$breakpoint] = [
+                'columns' => '',
+                'offset' => '',
+                'order' => '',
+                'sizing' => '', // xy-grid
+                'expand' => '', // flex-grid
+            ];
             if (isset($args['params']['grid']['breakpoints'][$breakpoint])) {
                 $grid[$breakpoint] = array_merge($grid[$breakpoint], $args['params']['grid']['breakpoints'][$breakpoint]);
             }
         }
         ?>
         <div id="extended-widget-opts-tab-<?php echo $args['id'];?>-grid" class="extended-widget-opts-tabcontent extended-widget-opts-tabcontent-grid">
-            <p>
-                <strong><?php _e('Shrink', 'widget-options');?></strong>&nbsp;
-                <input type="checkbox" name="extended_widget_opts-<?php echo $args['id'];?>[extended_widget_opts][grid][shrink]" value="1" <?php echo $shrink ? 'checked="checked"' : ''; ?> />
-            </p>
+            <?php if (apply_filters('widget-options-extended/grid', self::FLEX_GRID) == self::FLEX_GRID) : ?>
+                <p>
+                    <strong><?php _e('Shrink', 'widget-options');?></strong>&nbsp;
+                    <input type="checkbox" name="extended_widget_opts-<?php echo $args['id'];?>[extended_widget_opts][grid][shrink]" value="1" <?php echo $shrink ? 'checked="checked"' : ''; ?> />
+                </p>
+            <?php endif; ?>
             <p>
                 <strong><?php _e('Alignment', 'widget-options');?></strong>
                 <select name="extended_widget_opts-<?php echo $args['id'];?>[extended_widget_opts][grid][alignment]">
@@ -99,7 +112,11 @@ class WidgetOptionsExtended
                         <td>Column</td>
                         <td>Offset</td>
                         <td>Order</td>
-                        <td>Expand</td>
+                        <?php if (apply_filters('widget-options-extended/grid', self::FLEX_GRID) == self::FLEX_GRID) : ?>
+                            <td>Expand</td>
+                        <?php else : ?>
+                            <td>Sizing</td>
+                        <?php endif; ?>
                     </tr>
 
                     <?php foreach (self::$breakpoints as $breakpoint => $info) : ?>
@@ -133,9 +150,21 @@ class WidgetOptionsExtended
                                     <?php endforeach; ?>
                                 </select>
                             </td>
-                            <td>
-                                <input type="checkbox" name="extended_widget_opts-<?php echo $args['id'];?>[extended_widget_opts][grid][breakpoints][<?php echo $breakpoint; ?>][expand]" value="1" <?php echo $grid[$breakpoint]['expand'] == '1' ? 'checked="checked"' : ''; ?> />
-                            </td>
+                            <?php if (apply_filters('widget-options-extended/grid', self::FLEX_GRID) == self::FLEX_GRID) : ?>
+                                <td>
+                                    <input type="checkbox" name="extended_widget_opts-<?php echo $args['id'];?>[extended_widget_opts][grid][breakpoints][<?php echo $breakpoint; ?>][expand]" value="1" <?php echo $grid[$breakpoint]['expand'] == '1' ? 'checked="checked"' : ''; ?> />
+                                </td>
+                            <?php else : ?>
+                                <td>
+                                    <select class="widefat" name="extended_widget_opts-<?php echo $args['id'];?>[extended_widget_opts][grid][breakpoints][<?php echo $breakpoint; ?>][sizing]">
+                                        <option></option>
+                                        <?php foreach (['auto', 'shrink'] as $sizing) : ?>
+                                            <?php $class_name = $breakpoint != 'small' ? "$breakpoint-$sizing" : $sizing; ?>
+                                            <option value="<?php echo $class_name; ?>" <?php echo $grid[$breakpoint]['sizing'] == $class_name ? 'selected="selected"' : ''; ?>><?php echo ucfirst($sizing); ?></option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                </td>
+                            <?php endif; ?>
                         </tr>
                     <?php endforeach; ?>
                 </tbody>
@@ -195,17 +224,12 @@ class WidgetOptionsExtended
         if (!empty($options['alignment']['desktop'])) {
             $extra_classes[] = 'text-' . $options['alignment']['desktop'];
         }
-
-        if (!empty($options['grid']['shrink'])) {
-            $extra_classes[] = 'shrink';
-        }
         if (!empty($options['grid']['alignment'])) {
             $extra_classes[] = $options['grid']['alignment'];
         }
         if (!empty($options['grid']['breakpoints'])) {
             foreach ($options['grid']['breakpoints'] as $breakpoint => $data) {
                 if (!empty($data['columns'])) {
-                    $extra_classes[] = 'column';
                     $extra_classes[] = $data['columns'];
                 }
                 if (!empty($data['offset'])) {
@@ -214,12 +238,48 @@ class WidgetOptionsExtended
                 if (!empty($data['order'])) {
                     $extra_classes[] = $data['order'];
                 }
+            }
+        }
+
+        if (apply_filters('widget-options-extended/grid', self::FLEX_GRID) == self::FLEX_GRID) {
+            $extra_classes = array_merge($extra_classes, self::get_flex_grid_classes($options));
+        } else {
+            $extra_classes = array_merge($extra_classes, self::get_xy_grid_classes($options));
+        }
+
+        return $extra_classes;
+    }
+
+    protected static function get_flex_grid_classes($options)
+    {
+        $extra_classes = [];
+        if (!empty($options['grid']['shrink'])) {
+            $extra_classes[] = 'shrink';
+        }
+        if (!empty($options['grid']['breakpoints'])) {
+            foreach ($options['grid']['breakpoints'] as $breakpoint => $data) {
+                if (!empty($data['columns'])) {
+                    $extra_classes[] = 'column';
+                }
                 if (!empty($data['expand'])) {
                     $extra_classes[] = "$breakpoint-expand";
                 }
             }
         }
+        return $extra_classes;
+    }
 
+    protected static function get_xy_grid_classes($options)
+    {
+        $extra_classes = [];
+        if (!empty($options['grid']['breakpoints'])) {
+            foreach ($options['grid']['breakpoints'] as $breakpoint => $data) {
+                $extra_classes[] = 'cell';
+                if (!empty($data['sizing'])) {
+                    $extra_classes[] = $data['sizing'];
+                }
+            }
+        }
         return $extra_classes;
     }
 
