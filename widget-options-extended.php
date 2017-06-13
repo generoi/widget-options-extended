@@ -320,7 +320,7 @@ class WidgetOptionsExtended
             <?php foreach ($languages as $langcode => $lang) : ?>
                 <p>
                     <input type="checkbox" name="extended_widget_opts-<?php echo $args['id'];?>[extended_widget_opts][language][language][<?php echo $langcode;?>]" id="<?php echo $args['id'];?>-opts-language-<?php echo $langcode;?>" value="1" <?php echo !empty($language[$langcode]) ? 'checked="checked"' : ''; ?> />
-                    <label for="<?php echo $args['id'];?>-opts-language-<?php echo $langcode;?>"><?php echo $lang['translated_name'];?></label>
+                    <label for="<?php echo $args['id'];?>-opts-language-<?php echo $langcode;?>"><?php echo $lang['native_name'];?></label>
                 </p>
             <?php endforeach; ?>
         </div>
@@ -355,11 +355,9 @@ class WidgetOptionsExtended
 
     protected function get_current_language()
     {
-        $language = null;
-        if (defined('ICL_LANGUAGE_CODE')) {
-            $language = ICL_LANGUAGE_CODE;
-        }
-        return $language;
+        $language = apply_filters('wpml_current_language', null);
+        // Polylang returns false in admin.
+        return $language === false ? true : $language;
     }
 }
 
