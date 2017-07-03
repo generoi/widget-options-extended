@@ -1,6 +1,6 @@
 # widget-options-extended
 
-> A wordpress plugin extending [widget-options](https://github.com/phpbits/widget-options) with a fewextended options.
+> A wordpress plugin extending [widget-options](https://github.com/phpbits/widget-options) with a few extended options.
 
 _Note that this is built with Timber in mind. The classes aren't actually added to the widget but can be retrieved using:_
 
