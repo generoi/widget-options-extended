@@ -258,7 +258,7 @@ class WidgetOptionsExtended
         }
         if (!empty($options['grid']['breakpoints'])) {
             foreach ($options['grid']['breakpoints'] as $breakpoint => $data) {
-                if (!empty($data['columns'])) {
+                if (!empty($data['columns']) && !in_array('column', $extra_classes)) {
                     $extra_classes[] = 'column';
                 }
                 if (!empty($data['expand'])) {
@@ -274,7 +274,9 @@ class WidgetOptionsExtended
         $extra_classes = [];
         if (!empty($options['grid']['breakpoints'])) {
             foreach ($options['grid']['breakpoints'] as $breakpoint => $data) {
-                $extra_classes[] = 'cell';
+                if (!in_array('cell', $extra_classes)) {
+                    $extra_classes[] = 'cell';
+                }
                 if (!empty($data['sizing'])) {
                     $extra_classes[] = $data['sizing'];
                 }
