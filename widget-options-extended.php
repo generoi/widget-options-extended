@@ -3,7 +3,7 @@
 Plugin Name:        Widget Options Extended
 Plugin URI:         http://genero.fi
 Description:        Extends Widget Options with foundation grid classes and language.
-Version:            0.0.1
+Version:            2.1.0-alpha.1
 Author:             Genero
 Author URI:         http://genero.fi/
 
@@ -362,5 +362,11 @@ class WidgetOptionsExtended
         return $language === false ? true : $language;
     }
 }
+
+if (file_exists($composer = __DIR__ . '/vendor/autoload.php')) {
+    require_once $composer;
+}
+
+Puc_v4_Factory::buildUpdateChecker('https://github.com/generoi/widget-options-extended', __FILE__, 'widget-options-extended');
 
 add_action('plugins_loaded', array(WidgetOptionsExtended::get_instance(), 'init'), 11);
